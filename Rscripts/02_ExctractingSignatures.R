@@ -3,6 +3,8 @@
 # upload of time-resolved RNA seq on c. elegans capturing developmental clock
 # 2020 Mollecular systems biology, MWM Meeuse et al
 
+# Here, we extract molecular signature using NMF
+
 suppressPackageStartupMessages({
   library(SummarizedExperiment)
   library(limma)
