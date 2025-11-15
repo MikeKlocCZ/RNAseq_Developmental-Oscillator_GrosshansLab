@@ -12,4 +12,6 @@ With this periodicity in mind, we can perform a cosine fitting that establishes 
 
 
 ## Dimensionality Reduction: Non-Negative Matrix Factorization (NMF)
-There are many oscillatory genes. In order to obtain a more "functional" description, the idea was to reduce the dimensionality with an NMF factorization, namely using the [ButchR package](https://github.com/wurst-theke/ButchR). It uses Tensorflow to perform the factorization, whicj is "called" using the `reticulate` package in R.
+There are many oscillatory genes. In order to obtain a more "functional" description, the idea was to reduce the dimensionality with an NMF factorization, namely using the [ButchR package](https://github.com/wurst-theke/ButchR). It uses Tensorflow to perform the factorization, which is "called" using the `reticulate` package in R.
+
+The `ButchR` package offers several measures to establish a suitable latent space dimensionality $k$. Here, the optimal option was $k = 8$.
