@@ -3,40 +3,55 @@
 # upload of time-resolved RNA seq on c. elegans capturing developmental clock
 # 2020 Mollecular systems biology, MWM Meeuse et al
 
-setwd("/scicore/home/bentires/GROUP/michal/Developmental__oscillator/Grosshans_Data")
 
 suppressPackageStartupMessages({
   library(SummarizedExperiment)
   library(limma)
   library(edgeR)
-  library(stringr)
   library(ggplot2)
-  library(ggfortify)
   library(ggrepel)
   library(dplyr)
-  library(tidyverse)
-  library(vroom)
   library(ComplexHeatmap)
+  library(ggrepel)
+  library(patchwork)
+  
+  library(rstudioapi)
 })
 
+#Set wd to the directory of the script (in R studio)
+setwd(sub("01_OscillatoryGenes\\.R", "", getSourceEditorContext()$path) )
+
+#Generate folder structure to save intermediate results
+directories <- c("plots","tables","Rdata")
+
+for (directory in directories){
+  if (!dir.exists(directory)){
+    dir.create(directory)
+    print(paste("dir", directory, "created"))
+  } else {
+    print(paste("dir", directory, "exists"))
+  }
+}
 
 #read-in data
-RNAseq.1 <- read.table("input_data/GSE130782_expr_mRNA.tab")
-RNAseq.2 <-  read.table("input_data/GSE130811_expr_mRNA_CE10_coding.tab")
+RNAseq.1 <- read.table("../input_data/GSE130782_expr_mRNA.tab")
+RNAseq.2 <-  read.table("../input_data/GSE130811_expr_mRNA_CE10_coding.tab")
 
+#data come in 2 batches, in the batch 2, some data points are overlapping
+#clean data, first row reflects the exon width, rownames are gene names
 counts.1 <- RNAseq.1[,2:dim(RNAseq.1)[2]]
 exon.widths.1  <- RNAseq.1[,1]
 
 counts.2 <- RNAseq.2[,2:dim(RNAseq.2)[2]]
 exon.widths.2  <- RNAseq.2[,1]
 
+#generate DGELists
 dge.1 <- DGEList(counts = counts.1)
 dge.2 <- DGEList(counts = counts.2)
 
 #filter low expressed genes and compute  normalization factors
 # filtering based on .2 batch,  many genes start later expression
-
-keep.exprs.2 <- filterByExpr(dge.2, group = colnames(dge.2))
+keep.exprs.2 <- filterByExpr(dge.2, group = colnames(dge.2)) #each sample represents one timepoint (group)
 length(keep.exprs.2); sum(keep.exprs.2)
 #1] 20392
 #[1] 17094
@@ -54,20 +69,7 @@ dge.1 <- calcNormFactors(dge.1)
 dge.1$samples$norm.factors
 
 #unite the genes
-
 logCPM <- edgeR::cpm(dge.2, log = TRUE)
-
-Heatmap(logCPM[1:3000,], 
-        name = "log2cpm",
-        row_names_gp = grid::gpar(fontsize = 10),
-        column_names_gp = grid::gpar(fontsize = 10),
-        cluster_rows=TRUE,
-        row_title = NULL,
-     #   top_annotation = ha,
-        cluster_columns = FALSE,
-        show_row_names = FALSE,
-        show_column_names = TRUE)
-
 
 #oscillations 10 to 25 hours
 dge.cycle <- dge.2[,c(which(colnames(dge.2) == "X10hr"):which(colnames(dge.2) == "X25hr"))]
@@ -108,8 +110,7 @@ pcaData <- pca$x |>
   mutate(Sample = rownames(pca$x),
          Evolution = "evo") 
 
-library(ggrepel)
-library(patchwork)
+
 
 # Principal components
 pc1 <- ggplot(data = pcaData,
@@ -137,18 +138,16 @@ pdf("plots/cycles_pca_plots.pdf", width = 17, height = 5.5)
 pc1  + pc2 
 dev.off()
 
-#check inidvidual genes
-
-#regression with 8 hours period
+#######################
+#check individual ocillating genes
+#regression with 7.5 hours period (experimentally known)
 omega = 2*pi/7.5
-#Time = seq(5,26)
 Time = seq( 8,34)
 xc <- cos(omega*Time)
 xs <- - sin(omega*Time)
 
 
 y <- edgeR::cpm(dge.2,log = TRUE)[,4:30]
-
 
 pdf("plots/cyclingGenes.pdf", width = 17, height = 5.5)
 for (i in seq(1500) ){
@@ -157,11 +156,10 @@ for (i in seq(1500) ){
   plot(y[i,] ~ Time,  main=paste("row id", i, rownames(y)[i]))
   lines( pred  ~ Time, col="blue")
 }
-
 dev.off()
 
 
-
+######### Regression model
 dsg <- model.matrix(~  xc + xs + Time)
 limma.fit <- lmFit(y,design = dsg)
 
@@ -205,7 +203,7 @@ dev.off()
 
 #plot the heatmap
 #AMAZING!s
-Heatmap(y.osc, 
+heat.osc <- Heatmap(y.osc, 
         name = "log2cpm",
         row_names_gp = grid::gpar(fontsize = 10),
         column_names_gp = grid::gpar(fontsize = 10),
@@ -216,8 +214,11 @@ Heatmap(y.osc,
         show_row_names = FALSE,
         show_column_names = TRUE)
 
-#select these names for the whole data set
+pdf("plots/HM_oscillatoryGenes.pdf", width = 8, height = 7)
+print(heat.osc)
+dev.off()
 
+#select these names for the whole data set
 dge.1 <- dge.1[names(phases),]
 dge.2 <- dge.2[names(phases),]
 dge <- cbind(dge.1,dge.2)
@@ -230,7 +231,7 @@ dge$samples$timepoint <- c(c(0:15),c(5:48),c(37,38,39,41,45,47,48))
 #samples ordered by time, genes ordered by phase
 dge <- dge[,order(dge$samples$timepoint)]
 
-Heatmap(edgeR::cpm(dge, log = TRUE), 
+heat.whole <- Heatmap(edgeR::cpm(dge, log = TRUE), 
         name = "log2cpm",
         row_names_gp = grid::gpar(fontsize = 10),
         column_names_gp = grid::gpar(fontsize = 10),
@@ -240,6 +241,10 @@ Heatmap(edgeR::cpm(dge, log = TRUE),
         cluster_columns = FALSE,
         show_row_names = FALSE,
         show_column_names = TRUE)
+
+pdf("plots/HM_allGenes-aligned.pdf", width = 12, height = 7)
+print(heat.whole )
+dev.off()
 
 #pca on all
 EE <- as.matrix(edgeR::cpm(dge, log = TRUE))
@@ -253,8 +258,6 @@ pcaData <- pca$x |>
          Evolution = "evo",
          batch = as.factor(dge$samples$batch)) 
 
-library(ggrepel)
-library(patchwork)
 
 # Principal components
 pc1 <- ggplot(data = pcaData,
@@ -282,3 +285,36 @@ pc1  + pc2
 dev.off()
 
 saveRDS(dge,"Rdata/ordered_expression.rds")
+
+sessionInfo()
+# R version 4.2.2 (2022-10-31)
+# Platform: x86_64-pc-linux-gnu (64-bit)
+# Running under: Ubuntu 22.04.5 LTS
+# 
+# Matrix products: default
+# BLAS/LAPACK: /scicore/soft/easybuild/apps/FlexiBLAS/3.2.1-GCC-12.2.0/lib/libflexiblas.so.3.2
+# 
+# locale:
+#   [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8        LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8    LC_PAPER=C.UTF-8      
+# [8] LC_NAME=C              LC_ADDRESS=C           LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+# 
+# attached base packages:
+#   [1] grid      stats4    stats     graphics  grDevices utils     datasets  methods   base     
+# 
+# other attached packages:
+#   [1] patchwork_1.1.2             ComplexHeatmap_2.14.0       vroom_1.6.1                 readr_2.1.4                 tidyr_1.3.0                
+# [6] tibble_3.2.1                tidyverse_2.0.0             dplyr_1.1.1                 ggrepel_0.9.3               ggplot2_3.4.2              
+# [11] edgeR_3.40.2                limma_3.54.2                SummarizedExperiment_1.28.0 Biobase_2.58.0              GenomicRanges_1.50.2       
+# [16] GenomeInfoDb_1.34.9         IRanges_2.32.0              S4Vectors_0.36.2            BiocGenerics_0.44.0         MatrixGenerics_1.10.0      
+# [21] matrixStats_0.63.0          rstudioapi_0.14            
+# 
+# loaded via a namespace (and not attached):
+#   [1] bit64_4.0.5            foreach_1.5.2          GenomeInfoDbData_1.2.9 Rsamtools_2.14.0       pillar_1.9.0           lattice_0.21-8         glue_1.6.2            
+# [8] digest_0.6.31          RColorBrewer_1.1-3     XVector_0.38.0         colorspace_2.1-0       Matrix_1.5-4           pkgconfig_2.0.3        GetoptLong_1.0.5      
+# [15] csaw_1.32.0            magick_2.7.4           zlibbioc_1.44.0        purrr_1.0.1            scales_1.2.1           tzdb_0.3.0             BiocParallel_1.32.6   
+# [22] farver_2.1.1           generics_0.1.3         withr_2.5.0            cli_3.6.1              magrittr_2.0.3         crayon_1.5.2           fansi_1.0.4           
+# [29] doParallel_1.0.17      tools_4.2.2            hms_1.1.3              GlobalOptions_0.1.2    lifecycle_1.0.3        munsell_0.5.0          locfit_1.5-9.7        
+# [36] cluster_2.1.4          DelayedArray_0.24.0    Biostrings_2.66.0      compiler_4.2.2         rlang_1.1.0            RCurl_1.98-1.12        iterators_1.0.14      
+# [43] rjson_0.2.21           circlize_0.4.15        labeling_0.4.2         bitops_1.0-7           gtable_0.3.3           codetools_0.2-19       R6_2.5.1              
+# [50] gridExtra_2.3          bit_4.0.5              utf8_1.2.3             clue_0.3-64            metapod_1.6.0          shape_1.4.6            parallel_4.2.2        
+# [57] Rcpp_1.0.10            vctrs_0.6.1            png_0.1-8              tidyselect_1.2.0  
