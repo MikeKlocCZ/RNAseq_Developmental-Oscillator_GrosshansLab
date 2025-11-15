@@ -3,4 +3,4 @@ The repo contains code that reproduces and extends results from the paper [Devel
 
 ## Cosine fitting
 The gene expression shows a periodic signal with a period around 7.5 hours.
-![pca plot](https://github.com/MikeKlocCZ/RNAseq_Developmental-Oscillator_GrosshansLab/blob/main/figures/cycles_pca_plots.pdf "pca plot")
+![pca plot](https://github.com/MikeKlocCZ/RNAseq_Developmental-Oscillator_GrosshansLab/blob/main/figures/cycles_pca_plots.png "pca plot")
