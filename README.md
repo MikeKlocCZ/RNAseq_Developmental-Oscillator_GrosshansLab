@@ -18,4 +18,5 @@ The `ButchR` package offers several measures to establish a suitable latent spac
 ![Exposure](https://github.com/MikeKlocCZ/RNAseq_Developmental-Oscillator_GrosshansLab/blob/main/figures/NMF_H-0.png "Exposure")
 
 The samples can be clustered based on their exposures, here is a umap example:
-![UMAP](https://github.com/MikeKlocCZ/RNAseq_Developmental-Oscillator_GrosshansLab/blob/main/figures/UMAP_Hk8-0.png "UMAP")
+<img src="https://github.com/MikeKlocCZ/RNAseq_Developmental-Oscillator_GrosshansLab/blob/main/figures/UMAP_Hk8-0.png" width="600">
+
