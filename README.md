@@ -16,3 +16,6 @@ There are many oscillatory genes. In order to obtain a more "functional" descrip
 
 The `ButchR` package offers several measures to establish a suitable latent space dimensionality $k$. Here, the optimal option was $k = 8$. This is the exposure matrix.
 ![Exposure](https://github.com/MikeKlocCZ/RNAseq_Developmental-Oscillator_GrosshansLab/blob/main/figures/NMF_H-0.png "Exposure")
+
+The samples can be clustered based on their exposures, here is a umap example:
+![UMAP](https://github.com/MikeKlocCZ/RNAseq_Developmental-Oscillator_GrosshansLab/blob/main/figures/UMAP_Hk8-0.png "UMAP")
