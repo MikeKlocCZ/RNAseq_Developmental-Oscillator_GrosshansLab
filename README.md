@@ -25,4 +25,4 @@ The fully matured states have a distict transcriptional pattern that forms a cle
 Selecting the 8 signatures, as the last step `clusterProfiler` package is  used for their functional annotation from MSigDB database.
 
 ## How to Run the Code
-First, the input data from GEO need to be copied into the `input_data` folder. The two data sets used can be found in [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi) and [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi).
+First, the input data from [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi)  need to be copied into the `input_data` folder. The two data sets used have query numbers `GSE130782` and `GSE130811`.
