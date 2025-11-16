@@ -1,4 +1,4 @@
-# Oscillatory Patterns in Expression During the Larval Development of C. Elegans.
+# Oscillatory Patterns in Expression During the Larval Development of C. Elegans
 The repo contains code that reproduces and extends results from the paper [Developmental function and state transitions of a gene expression oscillator in Caenorhabditis elegans](https://www.embopress.org/doi/full/10.15252/msb.20209498) published by the group of Helge Grosshans, Friedrich Miescher Institut, Novartis. 
 
 Here is the description, what the code does:
@@ -23,3 +23,6 @@ The samples can be clustered based on their exposures, here is a umap example:
 The fully matured states have a distict transcriptional pattern that forms a clear cluster separation. The annotation of the phases of the molting were selected empirically based on the onset and changes in the oscillatory behavior from the heatmap as shown above. Adjustments of these phases  might improve the precision of the functional annotations.
 
 Selecting the 8 signatures, as the last step `clusterProfiler` package is  used for their functional annotation from MSigDB database.
+
+## How to Run the Code
+First, the input data from GEO need to be copied into the `input_data` folder. The two data sets used can be found in [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi) and [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi).
